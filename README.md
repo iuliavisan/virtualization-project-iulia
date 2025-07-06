@@ -1,6 +1,6 @@
 # Virtualization Project – Windows & Linux Network Setup
 
-This project was developed as part of a university assignment to simulate a small IT infrastructure using three virtual machines. Each machine was configured with specific roles and services, with a focus on understanding how systems communicate in a local network environment. Everything was done manually, step by step, without using automation or templates.
+This project was developed as part of a university assignment to simulate a small IT infrastructure using three virtual machines. Each machine was configured with specific roles and services, with a focus on understanding how systems communicate in a local network environment. Everything was done manually, step by step, without using automation or templates. Every step can be visually seen and tracked through the related directories(screenshots).
 
 ## Project Requirements
 
@@ -79,5 +79,5 @@ All documentation is written in Romanian and included in `.txt` format. The IP a
 
 This project gave me practical experience in setting up and managing both Windows and Linux systems, configuring services, dealing with IP addressing and DNS, and understanding how different operating systems interact on the same network. It also improved my troubleshooting skills and my ability to configure services without relying on pre-built solutions.
 
-I plan to extend this project by adding screenshots.
+Visual documentation is present in each correspondent directory.
 
