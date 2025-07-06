@@ -32,13 +32,13 @@ This policy defines password policies:
 - Min password age: 29 days
 - Min password length: 10 characters
 
-![Politica_Sebi GPO Settings](./vm2-Politica_Sebi.png)
+![Politica_Sebi GPO Settings](./vm2-user_properties3.png)
 
 ### GPO: Blocare_TaskManager_Sergiu
 
 This GPO disables the Task Manager for the user `sergiu`.
 
-![Blocare_TaskManager_Sergiu GPO Settings](./vm2-Blocare_TaskManager_Sergiu.png)
+![Blocare_TaskManager_Sergiu GPO Settings](./vm2-user_properties2.png)
 
 ---
 
@@ -51,8 +51,6 @@ Two users were created in Active Directory:
 Each user has custom properties. For example, the `sergiu` account is set to never expire, and has its password stored with reversible encryption.
 
 ![User Properties 1](./vm2-user_properties1.png)
-![User Properties 2](./vm2-user_properties2.png)
-![User Properties 3](./vm2-user_properties3.png)
 
 ---
 
