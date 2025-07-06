@@ -1,0 +1,303 @@
+1. Server Web Apache cu două site-uri virtuale (site1 și site2)
+Ce este Apache?
+Apache este un server web, adică un program care rulează pe un calculator (server) și care răspunde la cererile pe internet sau în rețea pentru pagini web.
+
+Atunci când tu scrii în browser http://adresa-server, Apache primește cererea și îi răspunde trimițând pagina web cerută.
+
+Apache este cel mai folosit server web în lume, este gratuit și open-source.
+
+Cum am instalat Apache?
+Comanda:
+
+bash
+Copy
+Edit
+sudo apt update
+sudo înseamnă că executăm comanda cu drepturi de administrator (root), pentru a putea modifica sistemul.
+
+apt update actualizează lista de programe și pachete disponibile pe sistem, ca să știe ce versiuni există.
+
+Comanda:
+
+bash
+Copy
+Edit
+sudo apt install apache2 
+
+Ce înseamnă un site virtual?
+Un site virtual (VirtualHost) este o configurare în Apache prin care poți avea mai multe site-uri pe același server, folosind același IP.
+
+Apache "ascultă" cererile și le trimite către site-ul corespunzător în funcție de domeniul cerut (ex: site1.local, site2.local).
+
+Această metodă este folosită pentru a găzdui mai multe site-uri pe o singură mașină.
+
+Cum am creat site-urile?
+Am creat două fișiere de configurare pentru site-uri în folderul:
+/etc/apache2/sites-available/
+Exemplu:
+
+site1.conf
+
+site2.conf
+
+Exemplu configurație site1.conf
+apache
+Copy
+Edit
+<VirtualHost *:80>
+    ServerName site1.local
+    DocumentRoot /var/www/site1
+
+    <Directory /var/www/site1>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/site1_error.log
+    CustomLog ${APACHE_LOG_DIR}/site1_access.log combined
+</VirtualHost>
+Ce înseamnă fiecare parte?
+<VirtualHost *:80> – Apache ascultă pe toate interfețele (IP-uri) pe portul 80 (portul standard pentru HTTP).
+
+ServerName site1.local – numele domeniului pentru acest site (cum îl cer utilizatorii).
+
+DocumentRoot /var/www/site1 – calea unde se află fișierele site-ului, adică pagina HTML, imagini etc.
+
+<Directory /var/www/site1> – setări speciale pentru folderul site-ului:
+
+Options Indexes FollowSymLinks – permite listarea fișierelor dacă nu există index și urmărirea link-urilor simbolice (scurtături).
+
+AllowOverride None – nu permite fișierelor .htaccess să modifice setările.
+
+Require all granted – permite acces tuturor utilizatorilor la acest folder.
+
+ErrorLog și CustomLog – fișierele unde Apache va salva jurnalele de erori și acces pentru acest site.
+
+Cum am activat site-urile?
+Comenzile:
+
+bash
+Copy
+Edit
+sudo a2ensite site1.conf
+sudo a2ensite site2.conf
+a2ensite este un script care activează site-ul în Apache, adică face legătura între configurația site-ului și serverul Apache, ca să știe să-l servească.
+
+După activare, am restartat serverul ca să aplice schimbările:
+
+bash
+Copy
+Edit
+sudo systemctl restart apache2
+Cum verific că funcționează?
+În browser, accesând adresa IP sau numele site-ului (ex: http://site1.local) ar trebui să apară pagina ta web.
+
+Dacă apare eroare, verifică fișierele de log în:
+/var/log/apache2/site1_error.log sau /var/log/apache2/error.log
+
+2. Server Mail cu Postfix
+Ce este Postfix?
+Postfix este un program care permite unui calculator să trimită și să primească emailuri folosind protocolul SMTP (Simple Mail Transfer Protocol).
+
+E un server de mail popular, sigur și ușor de configurat.
+
+Serverul mail gestionează trimiterea emailurilor între utilizatori și alte servere mail.
+
+Instalare Postfix
+Comanda:
+
+bash
+Copy
+Edit
+sudo apt install postfix
+În timpul instalării, apare un meniu de configurare în care alegem opțiunea "Internet Site".
+
+Aceasta înseamnă că serverul poate trimite și primi emailuri direct pe internet (nu doar local).
+
+Creare utilizatori mail
+Utilizatorii care pot primi mail sunt în general utilizatorii sistemului Linux.
+
+Creăm utilizatori noi cu comanda:
+
+bash
+Copy
+Edit
+sudo adduser nume_utilizator
+Fiecare utilizator are propriul inbox unde pot primi mesaje.
+
+Testare mail
+Trimitem mail local între utilizatori cu comanda:
+
+bash
+Copy
+Edit
+mail alt_utilizator
+Scriem mesajul și îl trimitem.
+
+Destinatarul îl poate citi cu comanda mail.
+
+Ce înseamnă protocol SMTP?
+SMTP (Simple Mail Transfer Protocol) este un protocol standard pentru trimiterea emailurilor între servere.
+
+Postfix se ocupă să trimită mesajele către alte servere sau să le primească.
+
+3. Server Samba – partajare fișiere în rețea
+Ce este Samba?
+Samba este un software care permite partajarea fișierelor și imprimantelor între calculatoare cu sistem de operare Linux și Windows.
+
+Practic, creezi foldere pe serverul Linux care pot fi accesate de pe Windows (ca și cum ar fi pe propriul calculator).
+
+Instalare Samba
+Comanda:
+
+bash
+Copy
+Edit
+sudo apt install samba
+Configurarea folderelor partajate
+Fișierele de configurare se află în:
+/etc/samba/smb.conf
+
+Exemplu configurație:
+
+ini
+Copy
+Edit
+[public]
+   path = /srv/samba/public
+   read only = no
+   guest ok = yes
+În acest exemplu:
+
+[public] este numele share-ului (folderul accesibil).
+
+path arată unde se află folderul pe disc.
+
+read only = no permite scrierea în folder.
+
+guest ok = yes permite acces fără autentificare.
+
+Creare utilizatori Samba
+Utilizatorii Samba sunt separați de cei Linux pentru securitate.
+
+Pentru a crea un utilizator Samba, folosim:
+
+bash
+Copy
+Edit
+sudo smbpasswd -a nume_utilizator
+Setăm o parolă pentru accesul la share.
+
+Pornire și activare Samba
+Pornim serviciul:
+
+bash
+Copy
+Edit
+sudo systemctl start smb.service
+Îl activăm să pornească automat la boot:
+
+bash
+Copy
+Edit
+sudo systemctl enable smb.service
+Testare acces
+Dintr-un calculator client Windows, în Explorer, în bara de adrese scriem:
+\\adresa-ip-server\public
+
+Dacă setările sunt corecte, vedem folderul partajat și putem lucra cu fișierele.
+
+4. Firewall (ufw) – protecția serverului
+Ce este firewall-ul?
+Firewall-ul este un filtru care controlează traficul de rețea care intră și iese din server.
+
+El poate bloca accesul neautorizat și permite doar traficul pe care îl configurăm.
+
+Astfel serverul este protejat de atacuri sau acces nepermis.
+
+Configurare firewall cu ufw
+Instalare și activare:
+
+bash
+Copy
+Edit
+sudo apt install ufw
+sudo ufw enable
+Deschidere porturi necesare serviciilor:
+
+HTTP (web):
+
+bash
+Copy
+Edit
+sudo ufw allow 
+
+Raport complet proiect Linux: server web, mail, Samba și firewall
+Introducere
+În acest proiect am configurat un server Linux care oferă mai multe servicii esențiale: un server web Apache cu două site-uri virtuale, un server de mail Postfix, un server Samba pentru partajare fișiere și un firewall pentru securizarea serverului. Toate acestea au fost realizate pentru a crea un mediu funcțional și securizat, capabil să deservească utilizatori din rețea fără să depindă de sistemele Windows.
+
+1. Server web Apache cu două site-uri virtuale
+Am instalat Apache, unul dintre cele mai populare servere web, care permite publicarea paginilor web pe internet sau în rețea. Am creat două site-uri virtuale distincte (site1 și site2), fiecare cu propriul conținut și configurație, pentru a demonstra cum putem găzdui mai multe site-uri pe același server.
+
+Ce am făcut concret:
+Am instalat Apache cu comanda sudo apt install apache2.
+
+Am creat două foldere, /var/www/site1 și /var/www/site2, unde am pus paginile web pentru fiecare site.
+
+Am scris două fișiere de configurare în /etc/apache2/sites-available/, câte unul pentru fiecare site, definind domeniul (ServerName), folderul cu fișiere (DocumentRoot) și regulile de acces.
+
+Am activat site-urile cu comanda a2ensite și am restartat serviciul Apache pentru a aplica schimbările.
+
+De ce?
+Serverul web este baza oricărei comunicări web. Folosind site-uri virtuale, am învățat să separăm conținutul și să gestionăm mai multe domenii pe aceeași mașină, o practică comună în administrarea serverelor.
+
+2. Server de mail Postfix
+Am instalat Postfix, un server de mail care gestionează trimiterea și primirea emailurilor folosind protocolul SMTP. Acesta permite serverului să comunice prin email cu alți utilizatori sau servere.
+
+Ce am făcut concret:
+Am instalat Postfix cu sudo apt install postfix.
+
+În timpul instalării am ales configurația „Internet Site”, care permite serverului să trimită și să primească mailuri pe internet.
+
+Am creat utilizatori noi pe server pentru a putea trimite și primi emailuri local.
+
+Am testat trimiterea mailurilor folosind comanda mail.
+
+De ce?
+Emailul este un serviciu fundamental pentru comunicarea în rețea. Configurarea Postfix ne oferă o bază solidă pentru înțelegerea protocolului SMTP și administrarea unui serviciu esențial în orice rețea.
+
+3. Server Samba pentru partajare fișiere
+Samba este o soluție care ne permite să partajăm foldere între calculatoare cu Linux și Windows. Astfel, utilizatorii din rețea pot accesa fișiere comune ușor și sigur.
+
+Ce am făcut concret:
+Am instalat Samba cu sudo apt install samba.
+
+Am configurat fișierul /etc/samba/smb.conf pentru a crea un share numit „public”, care arată către un folder de pe server (/srv/samba/public).
+
+Am permis accesul guest pentru simplitate și am făcut folderul scriibil.
+
+Am creat utilizatori Samba cu smbpasswd pentru acces securizat.
+
+Am pornit serviciul Samba și l-am setat să pornească automat.
+
+De ce?
+Partajarea fișierelor este esențială pentru colaborare în rețea. Samba ne-a permis să înțelegem cum Linux și Windows pot interacționa și cum se configurează accesul la resurse comune.
+
+4. Firewall – securizarea serverului
+Pentru a proteja serverul împotriva accesului neautorizat, am configurat firewall-ul UFW (Uncomplicated Firewall).
+
+Ce am făcut concret:
+Am instalat și activat UFW cu sudo apt install ufw și sudo ufw enable.
+
+Am permis accesul pe porturile esențiale pentru serviciile noastre, cum ar fi 80 (HTTP pentru Apache) și 445 (Samba).
+
+Astfel, am blocat tot traficul nedorit și am păstrat doar canalele necesare deschise.
+
+De ce?
+Firewall-ul este un element cheie în securitatea oricărui server. El ne asigură că doar traficul autorizat ajunge la serviciile noastre, prevenind atacuri și acces nepermis.
+
+Concluzii
+În acest proiect am reușit să construim și să configurăm un mediu Linux complex care oferă servicii web, mail și partajare fișiere, toate securizate cu firewall. Am învățat să folosim comenzi esențiale de administrare, să edităm fișiere de configurare și să gestionăm servicii, oferindu-ne o bază solidă pentru proiecte IT reale.
+
+Toate aceste cunoștințe mă ajută să înțeleg modul în care funcționează rețelele și serverele, și să fiu pregătită să prezint și să explic tehnic, clar și convingător tot ce am făcut.
