@@ -1,0 +1,231 @@
+Mașina 2 – Windows Server (roluri + configurare completă)
+🧩 1. Instalarea rolului Active Directory Domain Services (AD DS)
+🔧 Cum am făcut:
+Am deschis Server Manager (se deschide automat sau din Start).
+
+Am mers la Manage > Add Roles and Features.
+
+Am ales:
+
+Role-based or feature-based installation
+
+Serverul local (default, apăsat Next)
+
+La Server Roles: bifat Active Directory Domain Services (AD DS)
+
+Next până la final, apoi Install.
+
+📌 Ce înseamnă:
+Acest rol permite serverului să devină Domain Controller, adică „șeful” unei rețele de calculatoare, care gestionează utilizatorii, parolele, grupurile, politicile (GPO), DNS etc.
+
+🏗️ 2. Promovarea la Domain Controller (crearea domeniului)
+🔧 Cum am făcut:
+După instalare, am primit un steag galben sus cu „Promote this server to a domain controller”.
+
+Am ales opțiunea Add a new forest → scris: proiect.local
+
+Bifă pentru Domain Name System (DNS) server.
+
+Am pus o parolă pentru DSRM (Directory Services Restore Mode).
+
+Next → Create → Restart Server.
+
+📌 Ce înseamnă:
+Creezi un domeniu, o rețea internă în care alte calculatoare pot deveni „membre” și pot primi control de la server.
+
+🌐 3. DNS Configuration – crearea zonelor
+🔧 Cum am făcut:
+Deschis DNS Manager (din Server Manager > Tools > DNS)
+
+Am văzut deja zona proiect.local (creată automat).
+
+Am creat și o Reverse Lookup Zone:
+
+Click dreapta pe „Reverse Lookup Zones” → New Zone
+
+Primary zone → IPv4 → Network ID: 192.168.0
+
+Restul default → Finish
+
+În zona proiect.local, click dreapta > New Host (A):
+
+Nume: win10
+
+IP: IP-ul mașinii Windows 10 (ex: 192.168.0.196)
+
+Bifat „Create associated PTR record”
+
+📌 Ce înseamnă:
+DNS-ul traduce nume → IP și IP → nume. E nevoie pentru ca mașinile să „știe” între ele cine e cine.
+
+👥 4. Crearea userilor și grupurilor (Active Directory)
+🔧 Cum am făcut:
+Deschis Active Directory Users and Computers (ADUC)
+
+Domeniul proiect.local → folder Users:
+
+Click dreapta → New > User:
+
+Creat utilizatorii sebi și sergiu
+
+Creat grupuri:
+
+New > Group → Studenti și Profesori
+
+Adăugat utilizatorii în grupuri:
+
+Click dreapta pe grup > Properties > Members > Add → scris numele userului
+
+📌 Ce înseamnă:
+Grupurile ajută să aplici politici și permisiuni la mai mulți utilizatori odată.
+
+🧠 5. GPO – Group Policy Objects pentru sebi și sergiu
+🔧 Cum am făcut:
+Server Manager → Tools → Group Policy Management
+
+Am creat două GPO-uri:
+
+Click dreapta pe proiect.local > Create a GPO:
+
+GPO_sebi și GPO_sergiu
+
+Click dreapta pe fiecare > Edit → deschis Group Policy Editor
+
+Pentru Sebi:
+Computer Configuration → Policies → Windows Settings → Security Settings → Account Policies → Password Policy:
+
+Setări de parolă: min length, complexity etc.
+
+Pentru Sergiu:
+User Configuration → Policies → Admin Templates → System → Ctrl + Alt + Del Options:
+
+Disabled Task Manager
+
+➕ Security Filtering:
+Click pe GPO → jos la Security Filtering → Remove Authenticated Users, Add sebi sau sergiu
+
+📌 Ce înseamnă:
+GPO-urile aplică automat reguli și setări pe baza utilizatorului sau calculatorului care intră în domeniu.
+
+🌐 6. Configurarea serverului DNS + IP static
+🔧 Cum am făcut:
+IP-ul serverului setat static: 192.168.0.10
+
+DNS preferat: tot 192.168.0.10
+
+La client (Win10): IP static (ex: 192.168.0.196), DNS: 192.168.0.10
+
+Teste:
+ping proiect.local → trebuie să răspundă
+
+nslookup proiect.local → trebuie să rezolve în 192.168.0.10
+
+🌐 7. IIS – Instalare și configurare web server
+🔧 Cum am făcut:
+Server Manager > Add Roles and Features > Web Server (IIS)
+
+La Role Services: bifat și Default Document
+
+Deschis Internet Information Services (IIS) Manager:
+
+Sites > click dreapta > Add Website
+
+Creat 2 site-uri:
+profesor.com – folder: C:\inetpub\profesor
+
+student.ro – folder: C:\inetpub\student
+
+În fiecare folder: creat fișier index.html cu ceva conținut.
+
+Setat host name pentru fiecare site.
+
+La bindings: HTTP, IP 192.168.0.10, port 80, host: profesor.com sau student.ro.
+
+⚙️ 8. Editarea fișierului hosts pe client (Win10)
+🔧 Cum am făcut:
+Deschis Notepad ca administrator > deschis C:\Windows\System32\drivers\etc\hosts
+
+Adăugat:
+
+Copy code
+192.168.0.10 profesor.com
+192.168.0.10 student.ro
+📌 Ce înseamnă:
+Spui sistemului: „când accesez profesor.com, du-mă la IP 192.168.0.10 (serverul meu)”.
+
+🌐 9. Testare în browser
+Pe Windows 10:
+
+Deschis browser
+
+Tastat: http://profesor.com și http://student.ro
+
+Pagina ar trebui să apară dacă:
+
+site-urile sunt „Started” în IIS
+
+index.html e în directorul corect
+
+ai setat index.html ca Default Document
+
+✅ Concluzie:
+Această mașină face TOT:
+
+E Domain Controller
+
+E DNS Server
+
+E Web Server cu 2 site-uri
+
+Gestionează utilizatori și grupuri
+
+Are GPO-uri pentru reguli de securitate
+
+
+ 1. Ce alte detalii importante merită menționate?
+💡 Extra detalii utile la prezentare:
+Versiunea Windows Server (ex: 2019/2022) – ca să arăți clar ce sistem rulează.
+
+RAM și resurse: Spune că ai alocat x GB RAM (de ex. 2 sau 3) și spațiu pe disc (pentru VM).
+
+Numărul de mașini: Spune că proiectul include 3 mașini virtuale și aceasta este Mașina 2 (Server).
+
+Conectivitatea între mașini: ai folosit IP-uri statice pentru a permite comunicarea în rețea.
+
+Ping și nslookup: Ai testat rețeaua folosind comenzile ping, nslookup, ipconfig – important în diagnosticare.
+
+🎤 2. Text 
+Acum vă voi prezenta Mașina 2 din proiectul meu de virtualizare, care este un Windows Server configurat complet pentru a funcționa ca domeniu, DNS și web server.
+
+Primul pas a fost instalarea rolului Active Directory Domain Services, pentru ca această mașină să devină un Domain Controller. Am creat un nou domeniu, numit proiect.local. După promovare și repornire, serverul a gestionat toți utilizatorii și grupurile domeniului.
+
+Am adăugat și rolul de DNS Server, unde am configurat zona proiect.local și o zonă inversă pentru rezoluție IP → nume. Am adăugat manual în DNS înregistrările pentru clientul Windows 10, pentru ca acesta să poată fi recunoscut în rețea.
+
+În Active Directory, am creat două conturi de utilizator, sebi și sergiu, și două grupuri: Studenti și Profesori. Utilizatorii au fost adăugați în grupurile corespunzătoare.
+
+Apoi am configurat GPO-uri (Group Policy Objects) pentru fiecare utilizator, astfel încât să li se aplice reguli personalizate. De exemplu, utilizatorul sergiu are Task Manager-ul dezactivat. Am folosit Security Filtering pentru a aplica politicile doar utilizatorilor respectivi.
+
+IP-ul serverului a fost setat static, 192.168.0.10, iar clientul a fost configurat cu IP în aceeași rețea și DNS-ul serverului.
+
+Următorul pas a fost instalarea rolului Web Server (IIS). Am creat două site-uri: profesor.com și student.ro, fiecare cu propriul folder și fișier index.html. Fiecare site a fost configurat în IIS cu bindings personalizate și pornit manual.
+
+Pe client, am editat fișierul hosts pentru a asocia site-urile cu IP-ul serverului, astfel încât să poată fi accesate direct din browser.
+
+În final, am testat tot: utilizatorii se pot conecta la domeniu, DNS-ul funcționează, iar site-urile se deschid corect din browser.
+
+Această mașină 2 îndeplinește mai multe roluri esențiale într-o rețea: Domain Controller, DNS Server, Web Server, și gestionează GPO-uri pentru utilizatori.
+
+Mulțumesc!
+
+Posibile intrebari + răspunsuri
+Întrebare | Raspuns
+
+Ce este un Domain Controller?	Este un server care administrează o rețea de domeniu – utilizatori, parole, politici.
+
+De ce ai creat GPO-uri diferite?	Pentru a personaliza setările fiecărui utilizator – ex: restricții diferite.
+
+Ce este un reverse lookup zone?	O zonă DNS care face legătura inversă: IP → nume. Utilă pentru diagnostic.
+
+Cum ai testat conexiunea între client și server?	Cu comenzi ping, nslookup, verificare logare în domeniu.
+
+Ce înseamnă hosts?	E un fișier local care permite devierea numelor către IP-uri.
